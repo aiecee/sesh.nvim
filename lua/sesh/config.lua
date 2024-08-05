@@ -13,6 +13,5 @@ local default_config = {
 ---@param config PartialSeshConfig?
 return function(config)
 	local final_config = vim.tbl_deep_extend("keep", default_config, config or {})
-	print(vim.inspect(final_config))
 	return final_config
 end
