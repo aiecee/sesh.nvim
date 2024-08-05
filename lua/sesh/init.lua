@@ -23,13 +23,17 @@ function H.log_error(msg)
 end
 
 local M = {}
+---@type integer
 local _autocmd_id
+---@type string?
 local _file
-local config = {}
+---@type SeshConfig
+local config
+---@type boolean
+local _active = false
 
 ---@param partial_config PartialSeshConfig?
 function M.setup(partial_config)
-	---@type SeshConfig
 	config = build_config(partial_config)
 	vim.fn.mkdir(config.dir, "p")
 end
@@ -43,6 +47,8 @@ end
 function M.save()
 	if _autocmd_id == -1 or not _file then
 		H.log_error("Sesh: A session has to be started in order to save")
+		H.log_error(_autocmd_id)
+		H.log_error(_file)
 		return
 	end
 
@@ -66,7 +72,7 @@ end
 
 ---@param file string?
 function M.start(file)
-	if _autocmd_id ~= -1 then
+	if _active then
 		H.log_warn("Sesh: A session has already been started")
 		return
 	end
@@ -80,16 +86,20 @@ function M.start(file)
 			M.save()
 		end,
 	})
+
+	_active = true
 end
 
 function M.stop()
-	if _autocmd_id == -1 then
+	if not _active then
 		H.log_error("Sesh: A session has not been started")
 		return
 	end
 
 	vim.api.nvim_del_augroup_by_id(_autocmd_id)
 	_autocmd_id = -1
+	_file = nil
+	_active = false
 end
 
 function M.list()
